@@ -25,6 +25,15 @@ API_PARAMS = {
     "forecast_days": 7,
 }
 
+# Coordinate mapping for multi-city pipeline support
+CITY_COORDINATES = {
+    "delhi": (28.6139, 77.2090),
+    "mumbai": (19.0760, 72.8777),
+    "bangalore": (12.9716, 77.5946),
+    "kolkata": (22.5726, 88.3639),
+    "chennai": (13.0827, 80.2707),
+}
+
 
 @dataclass
 class Config:

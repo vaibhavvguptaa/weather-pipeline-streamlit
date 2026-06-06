@@ -15,7 +15,7 @@ import time
 import uuid
 from datetime import datetime
 
-from src.config import API_PARAMS, config
+from src.config import API_PARAMS, CITY_COORDINATES, config
 from src.extract import fetch_weather
 from src.load import save_csv, save_sqlite
 from src.logger import get_logger
@@ -110,9 +110,15 @@ def run_once(args: argparse.Namespace | None = None) -> None:
             logger.info("-" * 40)
             logger.info(f"Processing city: {city}")
 
-            # Temporarily override city_name for this iteration
+            # Temporarily override city_name and coordinates for this iteration
             original_city = config.city_name
+            original_lat = config.latitude
+            original_lon = config.longitude
+
             config.city_name = city
+            city_key = city.lower().strip()
+            if city_key in CITY_COORDINATES:
+                config.latitude, config.longitude = CITY_COORDINATES[city_key]
 
             try:
                 # ── Extract ───────────────────────────────────────────────
@@ -141,8 +147,10 @@ def run_once(args: argparse.Namespace | None = None) -> None:
                 logger.info(f"  Rows processed: {len(df)}")
 
             finally:
-                # Restore original city_name
+                # Restore original city_name and coordinates
                 config.city_name = original_city
+                config.latitude = original_lat
+                config.longitude = original_lon
 
         logger.info("=" * 60)
         logger.info(f"Pipeline completed successfully [run_id: {run_id}]")
