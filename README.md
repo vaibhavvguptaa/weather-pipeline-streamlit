@@ -2,7 +2,7 @@
 
 [![CI Build](https://github.com/vaibhavvguptaa/weather-pipeline-streamlit/actions/workflows/ci.yml/badge.svg)](https://github.com/vaibhavvguptaa/weather-pipeline-streamlit/actions)
 [![Scheduled ETL](https://github.com/vaibhavvguptaa/weather-pipeline-streamlit/actions/workflows/scheduled_etl.yml/badge.svg)](https://github.com/vaibhavvguptaa/weather-pipeline-streamlit/actions)
-[![Live Dashboard](https://img.shields.io/badge/Live-Streamlit%20App-FF4B4B?style=for-the-badge&logo=streamlit)](https://weather-pipeline-streamlit.streamlit.app)
+[![Live Dashboard](https://img.shields.io/badge/Live-Streamlit%20App-FF4B4B?style=for-the-badge&logo=streamlit)](https://vaibhavvguptaa-weather-pipeline-streamlit-dashboard-gdjcfy.streamlit.app/)
 
 A production-grade ETL pipeline that fetches 7-day hourly weather forecasts from the [Open-Meteo API](https://open-meteo.com), validates data quality, and loads it into CSV + SQLite — with an interactive Streamlit dashboard for visualization.
 
