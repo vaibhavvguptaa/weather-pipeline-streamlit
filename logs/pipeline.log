@@ -1,0 +1,33 @@
+2026-06-06 18:52:25 | INFO     | main | ============================================================
+2026-06-06 18:52:25 | INFO     | main | weather-pipeline  START [run_id: de097a4b]
+2026-06-06 18:52:25 | INFO     | main | Timestamp: 2026-06-06T18:52:25.540650
+2026-06-06 18:52:25 | INFO     | main | ============================================================
+2026-06-06 18:52:25 | INFO     | main | Cities to process: Delhi
+2026-06-06 18:52:25 | INFO     | main | ----------------------------------------
+2026-06-06 18:52:25 | INFO     | main | Processing city: Delhi
+2026-06-06 18:52:25 | INFO     | main | [1/3] EXTRACT — fetching from Open-Meteo API
+2026-06-06 18:52:25 | INFO     | src.extract | Fetching weather data for Delhi (28.6139, 77.209)
+2026-06-06 18:52:27 | INFO     | src.extract | API response received — status 200
+2026-06-06 18:52:27 | DEBUG    | src.extract | Raw API units: {'time': 'iso8601', 'temperature_2m': '°C', 'relative_humidity_2m': '%', 'precipitation_probability': '%', 'windspeed_10m': 'km/h', 'weathercode': 'wmo code'}
+2026-06-06 18:52:27 | INFO     | main | [2/3] TRANSFORM — cleaning and validating
+2026-06-06 18:52:27 | INFO     | src.transform | Parsed raw data — 168 rows, 6 columns
+2026-06-06 18:52:27 | DEBUG    | src.transform | Parsed 'time' column to datetime
+2026-06-06 18:52:27 | INFO     | src.transform | Clean complete — 168 rows, 7 days
+2026-06-06 18:52:27 | INFO     | src.validators | Validation passed — 168 rows, 0 total nulls
+2026-06-06 18:52:27 | INFO     | main | [3/3] LOAD — writing outputs
+2026-06-06 18:52:27 | INFO     | src.load | CSV saved → data\weather_delhi_2026-06-06.csv  (168 rows)
+2026-06-06 18:52:27 | INFO     | src.load | SQLite saved → data\weather.db  (total rows in DB: 168)
+2026-06-06 18:52:27 | INFO     | main |   City 'Delhi' completed successfully
+2026-06-06 18:52:27 | INFO     | main |   CSV  → data\weather_delhi_2026-06-06.csv
+2026-06-06 18:52:27 | INFO     | main |   DB   → data\weather.db
+2026-06-06 18:52:27 | INFO     | main |   Rows processed: 168
+2026-06-06 18:52:27 | INFO     | main | ============================================================
+2026-06-06 18:52:27 | INFO     | main | Pipeline completed successfully [run_id: de097a4b]
+2026-06-06 18:52:27 | INFO     | main | ============================================================
+2026-06-06 18:54:12 | INFO     | src.validators | Validation passed — 168 rows, 0 total nulls
+2026-06-06 18:54:12 | ERROR    | src.validators | [VALIDATION FAILED] windspeed_10m out of range [0, 300]
+2026-06-06 18:54:12 | ERROR    | src.validators | [VALIDATION FAILED] weathercode has invalid WMO codes: [150]
+2026-06-06 18:54:12 | ERROR    | src.validators | [VALIDATION FAILED] Found 2 duplicate (time, city) combinations
+2026-06-06 18:54:12 | WARNING  | src.validators | [VALIDATION] Found 1 time gaps larger than 1h 15m. Max gap: 0 days 04:00:00
+2026-06-06 18:54:12 | INFO     | src.validators | Validation passed — 168 rows, 0 total nulls
+2026-06-06 18:54:12 | ERROR    | src.validators | [VALIDATION FAILED] Row count 100 is below 90% of expected 168

@@ -67,8 +67,14 @@ def save_sqlite(df: pd.DataFrame) -> Path:
 
         # Step 2: Insert or replace from temp table to main table
         conn.execute("""
-            INSERT OR REPLACE INTO weather_forecast
-            SELECT * FROM weather_temp
+            INSERT OR REPLACE INTO weather_forecast (
+                time, city, temperature_2m, relative_humidity_2m,
+                precipitation_probability, windspeed_10m, weathercode, date, hour
+            )
+            SELECT 
+                time, city, temperature_2m, relative_humidity_2m,
+                precipitation_probability, windspeed_10m, weathercode, date, hour
+            FROM weather_temp
         """)
 
         # Step 3: Drop temp table
