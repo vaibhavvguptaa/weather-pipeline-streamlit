@@ -1,35 +1,12 @@
-# weather-pipeline 🌤
+# weather-pipeline
 
-A production-style ETL pipeline that fetches 7-day hourly weather forecast data for Delhi from the [Open-Meteo API](https://open-meteo.com), cleans and validates it with Pandas, and loads it into CSV + SQLite — with structured logging, retry logic, and data quality checks throughout.
-
-> **Runs automatically every day at 6:00 AM IST via GitHub Actions.**
-
----
-
-## Architecture
+A production-grade ETL pipeline that fetches 7-day hourly weather forecasts from the [Open-Meteo API](https://open-meteo.com), validates data quality, and loads it into CSV + SQLite — with an interactive Streamlit dashboard for visualization.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        weather-pipeline                         │
-│                                                                 │
-│   ┌──────────────┐    ┌──────────────┐    ┌──────────────────┐ │
-│   │   EXTRACT    │───▶│  TRANSFORM   │───▶│      LOAD        │ │
-│   │              │    │              │    │                  │ │
-│   │ Open-Meteo   │    │ Pandas clean │    │ CSV (dated)      │ │
-│   │ API (free)   │    │ Type casting │    │ SQLite (upsert)  │ │
-│   │              │    │ Null checks  │    │                  │ │
-│   │ Tenacity     │    │ Range checks │    │ Idempotent —     │ │
-│   │ retry logic  │    │ Row count    │    │ safe to re-run   │ │
-│   └──────────────┘    └──────────────┘    └──────────────────┘ │
-│                                                                 │
-│   Structured logging (console + file) · .env config · venv     │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                    ┌─────────▼──────────┐
-                    │   GitHub Actions   │
-                    │  Cron: 6 AM IST    │
-                    │  daily auto-run    │
-                    └────────────────────┘
+EXTRACT              TRANSFORM             LOAD                 DASHBOARD
+Open-Meteo API  -->  Pandas clean    -->   CSV (dated)    -->   Streamlit app
++ tenacity retry     Type casting          SQLite upsert        Plotly charts
++ response check     6 validation checks   Idempotent           KPI metrics
 ```
 
 ---
@@ -38,14 +15,16 @@ A production-style ETL pipeline that fetches 7-day hourly weather forecast data 
 
 | Layer | Tool |
 |---|---|
-| Language | Python 3.11 |
-| HTTP client | `requests` |
-| Retry logic | `tenacity` (exponential backoff) |
+| Language | Python 3.11+ |
+| HTTP / Retry | `requests` + `tenacity` (exponential backoff) |
 | Data processing | `pandas` |
-| Config management | `python-dotenv` |
-| Storage | CSV + SQLite (`sqlite3`) |
+| Storage | CSV + SQLite (idempotent upsert) |
+| Dashboard | `streamlit` + `plotly` |
+| Config | `python-dotenv` + dataclass validation |
 | Logging | Python `logging` (console + rotating file) |
-| Automation | GitHub Actions (daily cron) |
+| Testing | `pytest` (59 tests) + `pytest-cov` |
+| CI/CD | GitHub Actions (automated tests + ruff linting) |
+| CLI | `argparse` (built-in) |
 
 ---
 
@@ -53,116 +32,141 @@ A production-style ETL pipeline that fetches 7-day hourly weather forecast data 
 
 ```
 weather-pipeline/
-├── .env.example          # Config template (copy to .env)
-├── .gitignore
-├── requirements.txt
-├── main.py               # Pipeline orchestrator
+├── main.py               # CLI entry point + pipeline orchestrator
+├── dashboard.py           # Streamlit visualization dashboard
 ├── src/
-│   ├── config.py         # Loads .env into a dataclass
-│   ├── extract.py        # API fetch with retry logic
-│   ├── transform.py      # Pandas clean + validate
-│   ├── load.py           # CSV + SQLite writer (idempotent)
-│   └── logger.py         # Structured logging setup
-├── data/                 # Output files (gitignored)
-│   ├── weather_delhi_YYYY-MM-DD.csv
-│   └── weather.db
-└── logs/                 # Log files (gitignored)
-    └── pipeline.log
+│   ├── config.py          # .env config + validation + multi-city
+│   ├── extract.py         # API fetch with retry + response validation
+│   ├── transform.py       # Parse, clean, type-cast
+│   ├── validators.py      # 6 data quality checks
+│   ├── load.py            # CSV + SQLite idempotent writer
+│   ├── logger.py          # Rotating file + console logging
+│   └── utils.py           # Shared helpers
+├── tests/                 # 59 pytest tests
+├── data/                  # Output files (gitignored)
+├── logs/                  # Log files (gitignored)
+├── pyproject.toml         # Packaging + tool config
+├── .github/workflows/     # CI/CD pipeline
+└── .env.example           # Config template
 ```
 
 ---
 
 ## Quickstart
 
-### 1. Clone and set up environment
-
 ```bash
+# 1. Clone and install
 git clone https://github.com/vaibhavvvguptaa/weather-pipeline.git
 cd weather-pipeline
-
-# Windows
-python -m venv venv
-venv\Scripts\activate
-
-# Mac/Linux
-python -m venv venv
-source venv/bin/activate
-
+python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-### 2. Configure
-
-```bash
+# 2. Configure (optional — defaults to Delhi)
 cp .env.example .env
-# Edit .env if you want a different city (change LATITUDE, LONGITUDE, CITY_NAME)
-```
 
-### 3. Run
-
-```bash
+# 3. Run the pipeline
 python main.py
 ```
 
-### Expected output
+---
 
+## CLI Usage
+
+```bash
+# Default run (uses .env settings)
+python main.py
+
+# Override city and coordinates
+python main.py --city Mumbai --lat 19.08 --lon 72.88
+
+# 14-day forecast instead of 7
+python main.py --days 14
+
+# Skip specific outputs
+python main.py --no-csv
+python main.py --no-sqlite
+
+# Run on a schedule (every 60 minutes)
+python main.py --schedule 60
 ```
-2026-04-12 06:00:01 | INFO     | main | ============================================================
-2026-04-12 06:00:01 | INFO     | main | weather-pipeline  START
-2026-04-12 06:00:01 | INFO     | main | [1/3] EXTRACT — fetching from Open-Meteo API
-2026-04-12 06:00:02 | INFO     | src.extract | Fetching weather data for Delhi (28.6139, 77.209)
-2026-04-12 06:00:02 | INFO     | src.extract | API response received — status 200
-2026-04-12 06:00:02 | INFO     | main | [2/3] TRANSFORM — cleaning and validating
-2026-04-12 06:00:02 | INFO     | src.transform | Parsed raw data — 168 rows, 5 columns
-2026-04-12 06:00:02 | INFO     | src.transform | Clean complete — 168 rows, 7 days
-2026-04-12 06:00:02 | INFO     | src.transform | Validation passed — 168 rows, 0 total nulls
-2026-04-12 06:00:02 | INFO     | main | [3/3] LOAD — writing outputs
-2026-04-12 06:00:02 | INFO     | src.load | CSV saved → data/weather_delhi_2026-04-12.csv (168 rows)
-2026-04-12 06:00:02 | INFO     | src.load | SQLite saved → data/weather.db (total rows in DB: 168)
-2026-04-12 06:00:02 | INFO     | main | Pipeline completed successfully
+
+---
+
+## Multi-City Support
+
+Set multiple cities in `.env` (comma-separated):
+
+```env
+CITIES=Delhi,Mumbai,Bangalore
 ```
+
+The pipeline loops through all cities in a single run, producing separate CSVs and deduplicating by `(time, city)` in SQLite.
+
+---
+
+## Dashboard
+
+Visualize your collected data with an interactive dashboard:
+
+```bash
+streamlit run dashboard.py
+```
+
+Features:
+- City selector dropdown
+- KPI cards (temperature, humidity, wind speed, data points)
+- Hourly temperature trend line chart
+- Daily average humidity bar chart
+- Wind speed scatter plot
+- Weather condition distribution pie chart (WMO codes)
+- Precipitation probability area chart
+- Raw data table with expand/collapse
 
 ---
 
 ## Data Quality Checks
 
-The `transform.py` validation layer runs these checks on every execution:
-
-| Check | Rule | Behaviour |
+| Check | Rule | Behavior |
 |---|---|---|
-| Null check | Any column > 20% nulls | ❌ Raises error, pipeline stops |
-| Null check | Any column ≤ 20% nulls | ⚠️ Logged as warning, continues |
-| Temperature range | Must be between -50°C and 60°C | ❌ Raises error |
-| Humidity range | Must be between 0% and 100% | ❌ Raises error |
-| Precipitation range | Must be between 0% and 100% | ❌ Raises error |
-| Row count | Must be ≥ 90% of expected 168 rows | ❌ Raises error |
+| Null values | > 20% per column | Error (pipeline stops) |
+| Null values | <= 20% per column | Warning (logged) |
+| Temperature | -50 to 60 °C | Error |
+| Humidity | 0 to 100% | Error |
+| Precipitation | 0 to 100% | Error |
+| Wind speed | 0 to 300 km/h | Error |
+| Weather code | 0 to 99 (WMO) | Error |
+| Duplicates | No duplicate (time, city) | Error |
+| Time gaps | < 1h 15m between rows | Warning |
+| Row count | >= 90% of expected rows | Error |
 
 ---
 
 ## Key Engineering Decisions
 
-**Idempotency** — re-running the pipeline on the same day produces the same result. SQLite uses a composite primary key `(time, city)` and deduplicates on every run. Safe to run multiple times.
+**Idempotency** — SQLite uses a composite primary key `(time, city)` with `INSERT OR REPLACE` via a temporary table. Safe to re-run without duplicates.
 
-**Retry with exponential backoff** — `tenacity` retries up to 3 times on `ConnectionError` or `Timeout`, with wait times of 2s → 4s → 8s before re-raising. Handles transient API failures gracefully.
+**Retry with exponential backoff** — `tenacity` retries on `ConnectionError`, `Timeout`, HTTP 429, and 5xx errors with wait times 2s -> 4s -> 8s.
 
-**Structured logging** — every stage logs to both console (INFO+) and a persistent `logs/pipeline.log` file (DEBUG+). Easy to debug failures in production.
+**Structured logging** — Dual output to console (INFO+) and rotating file (DEBUG+). 5MB rotation with 5 backups. Run ID tracking via UUID.
 
-**Config via dataclass** — all configuration is loaded from `.env` into a typed `Config` dataclass. No hardcoded values anywhere in the pipeline code.
+**Configuration validation** — Dataclass-based config with `__post_init__` validation for lat/lon ranges, city name, and retry parameters. Invalid config fails fast with clear error messages.
 
 ---
 
-## Sample Output (CSV)
+## Testing
 
-| time | temperature_2m | relative_humidity_2m | precipitation_probability | windspeed_10m | weathercode | city | date | hour |
-|---|---|---|---|---|---|---|---|---|
-| 2026-04-12 00:00:00 | 24.3 | 58.0 | 5.0 | 12.4 | 1 | Delhi | 2026-04-12 | 0 |
-| 2026-04-12 01:00:00 | 23.8 | 61.0 | 5.0 | 10.2 | 0 | Delhi | 2026-04-12 | 1 |
+```bash
+# Run all 59 tests
+pytest tests/ -v
+
+# With coverage report
+pytest tests/ -v --cov=src --cov-report=term-missing
+```
 
 ---
 
 ## Author
 
-**Vaibhav Gupta** — Technical Support Analyst Analyst at Highspring India LLP
+**Vaibhav Gupta** — Technical Support Analyst at Highspring India LLP
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-vaibhavvvgupta-blue)](https://linkedin.com/in/vaibhavvvgupta)
-[![GitHub](https://img.shields.io/badge/GitHub-vaibhavvvguptaa-black)](https://github.com/vaibhavvvguptaa)
+[LinkedIn](https://linkedin.com/in/vaibhavvvgupta) | [GitHub](https://github.com/vaibhavvvguptaa)

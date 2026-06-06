@@ -11,11 +11,27 @@ __pycache__/
 *.pyd
 
 # Data outputs (optional — remove if you want to commit sample data)
-data/
+data/*
+!data/weather.db
 
 # SQLite DB
 *.db
 *.sqlite
+!data/weather.db
+
+# Testing / Coverage
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Packaging
+*.egg-info/
+dist/
+build/
 
 # VS Code
 .vscode/
