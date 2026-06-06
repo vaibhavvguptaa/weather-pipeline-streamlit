@@ -124,6 +124,16 @@ Features:
 
 ---
 
+## Automated Deployment & Live Updates
+
+This project is configured for serverless automation:
+* **Scheduled ETL Pipeline:** A GitHub Actions workflow (`.github/workflows/scheduled_etl.yml`) runs automatically every 12 hours.
+* **Auto-Ingestion:** The workflow extracts weather forecast data for 5 major cities (`Delhi`, `Mumbai`, `Bangalore`, `Kolkata`, `Chennai`), runs transformations, validates data quality, and updates `data/weather.db`.
+* **Database Sync:** The workflow automatically commits and pushes the updated `weather.db` back to the GitHub repository.
+* **Real-time Streamlit Sync:** The hosted Streamlit Community Cloud app detects the update and pulls the fresh database automatically, showing live forecasts to visitors.
+
+---
+
 ## Data Quality Checks
 
 | Check | Rule | Behavior |
