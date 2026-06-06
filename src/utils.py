@@ -2,14 +2,16 @@
 Utility functions for the weather pipeline.
 Contains shared helper functions used across modules.
 """
+
 from pathlib import Path
+
 from src.config import config
 
 
 def ensure_output_dir() -> Path:
     """
     Ensure the output directory exists.
-    
+
     Returns:
         Path object for the output directory
     """
@@ -21,7 +23,7 @@ def ensure_output_dir() -> Path:
 def ensure_log_dir() -> Path:
     """
     Ensure the log directory exists.
-    
+
     Returns:
         Path object for the log directory
     """

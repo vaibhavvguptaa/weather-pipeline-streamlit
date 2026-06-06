@@ -1,11 +1,10 @@
 """
 Tests for main.py — CLI argument parsing and run metadata.
 """
-import inspect
-import pytest
-from unittest.mock import patch, MagicMock
 
-from main import build_parser, apply_overrides, run_once
+import inspect
+
+from main import apply_overrides, build_parser, run_once
 
 
 class TestCLIParser:
@@ -70,6 +69,7 @@ class TestApplyOverrides:
 
     def test_city_override(self):
         from src.config import config
+
         parser = build_parser()
         args = parser.parse_args(["--city", "Tokyo"])
         original = config.city_name
@@ -82,6 +82,7 @@ class TestApplyOverrides:
 
     def test_lat_override(self):
         from src.config import config
+
         parser = build_parser()
         args = parser.parse_args(["--lat", "35.68"])
         original = config.latitude
@@ -91,6 +92,7 @@ class TestApplyOverrides:
 
     def test_days_override(self):
         from src.config import API_PARAMS
+
         parser = build_parser()
         args = parser.parse_args(["--days", "14"])
         original = API_PARAMS.get("forecast_days")

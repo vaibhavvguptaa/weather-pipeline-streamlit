@@ -2,20 +2,21 @@
 Logging configuration for the weather pipeline.
 Provides structured logging with console and file handlers.
 """
+
 import logging
 import sys
-from pathlib import Path
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 
 def get_logger(name: str, log_dir: str = "logs") -> logging.Logger:
     """
     Get a logger with console and rotating file handlers.
-    
+
     Args:
         name: Logger name (typically __name__)
         log_dir: Directory for log files
-        
+
     Returns:
         Configured Logger instance
     """

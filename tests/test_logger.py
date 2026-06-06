@@ -1,20 +1,20 @@
 """
 Tests for src/logger.py — logging configuration and rotation.
 """
+
 import inspect
-import logging
 from logging.handlers import RotatingFileHandler
 
-from src.logger import get_logger
+import pytest
+
 from src.config import config
+from src.logger import get_logger
 
 
 class TestLogRotation:
     def test_has_rotating_file_handler(self):
         test_logger = get_logger("test_rotation_check")
-        file_handlers = [
-            h for h in test_logger.handlers if isinstance(h, RotatingFileHandler)
-        ]
+        file_handlers = [h for h in test_logger.handlers if isinstance(h, RotatingFileHandler)]
         assert len(file_handlers) >= 1
 
     def test_max_bytes_is_5mb(self):
@@ -45,6 +45,3 @@ class TestConfigurableLogDir:
         assert hasattr(config, "log_dir")
         assert config.log_dir == "logs" or isinstance(config.log_dir, str)
 
-
-# needed for pytest.fail
-import pytest

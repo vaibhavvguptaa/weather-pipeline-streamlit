@@ -1,9 +1,11 @@
 """
 Tests for src/extract.py — API response validation and HTTP retry logic.
 """
+
 import inspect
-import pytest
 from unittest.mock import Mock
+
+import pytest
 from requests.exceptions import HTTPError
 
 from src.extract import fetch_weather, is_retryable_http_error

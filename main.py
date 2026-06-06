@@ -8,17 +8,18 @@ Usage:
     python main.py --no-sqlite               # CSV only
     python main.py --schedule 60             # run every 60 minutes
 """
+
 import argparse
 import sys
 import time
 import uuid
 from datetime import datetime
 
-from src.logger import get_logger
-from src.config import config, API_PARAMS
+from src.config import API_PARAMS, config
 from src.extract import fetch_weather
-from src.transform import transform
 from src.load import save_csv, save_sqlite
+from src.logger import get_logger
+from src.transform import transform
 
 logger = get_logger("main", log_dir=config.log_dir)
 
@@ -30,7 +31,8 @@ def build_parser() -> argparse.ArgumentParser:
         description="ETL pipeline for Open-Meteo weather forecast data.",
     )
     parser.add_argument(
-        "-c", "--city",
+        "-c",
+        "--city",
         type=str,
         default=None,
         help="Override city name (default: from .env CITIES or CITY_NAME)",
@@ -54,7 +56,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="Override forecast_days (default: 7)",
     )
     parser.add_argument(
-        "-s", "--schedule",
+        "-s",
+        "--schedule",
         type=int,
         default=None,
         metavar="MINUTES",

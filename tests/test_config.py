@@ -1,8 +1,9 @@
 """
 Tests for src/config.py — configuration validation and CITIES parsing.
 """
-import os
+
 import pytest
+
 from src.config import Config
 
 
@@ -31,8 +32,13 @@ class TestConfigValidation:
 
     def test_valid_config_loads(self):
         cfg = Config(
-            latitude=28.6139, longitude=77.2090, city_name="Delhi",
-            output_dir="data", db_name="test.db", max_retries=3, retry_backoff=2,
+            latitude=28.6139,
+            longitude=77.2090,
+            city_name="Delhi",
+            output_dir="data",
+            db_name="test.db",
+            max_retries=3,
+            retry_backoff=2,
         )
         assert cfg.latitude == 28.6139
         assert cfg.longitude == 77.2090
@@ -45,31 +51,51 @@ class TestCitiesParsing:
     def test_cities_from_env(self, monkeypatch):
         monkeypatch.setenv("CITIES", "Delhi,Mumbai,Bangalore")
         cfg = Config(
-            latitude=28.6139, longitude=77.2090, city_name="Delhi",
-            output_dir="data", db_name="test.db", max_retries=3, retry_backoff=2,
+            latitude=28.6139,
+            longitude=77.2090,
+            city_name="Delhi",
+            output_dir="data",
+            db_name="test.db",
+            max_retries=3,
+            retry_backoff=2,
         )
         assert cfg.cities == ["Delhi", "Mumbai", "Bangalore"]
 
     def test_cities_fallback_to_city_name(self, monkeypatch):
         monkeypatch.setenv("CITIES", "")
         cfg = Config(
-            latitude=28.6139, longitude=77.2090, city_name="Delhi",
-            output_dir="data", db_name="test.db", max_retries=3, retry_backoff=2,
+            latitude=28.6139,
+            longitude=77.2090,
+            city_name="Delhi",
+            output_dir="data",
+            db_name="test.db",
+            max_retries=3,
+            retry_backoff=2,
         )
         assert cfg.cities == ["Delhi"]
 
     def test_cities_strips_whitespace(self, monkeypatch):
         monkeypatch.setenv("CITIES", " Delhi , Mumbai ")
         cfg = Config(
-            latitude=28.6139, longitude=77.2090, city_name="Delhi",
-            output_dir="data", db_name="test.db", max_retries=3, retry_backoff=2,
+            latitude=28.6139,
+            longitude=77.2090,
+            city_name="Delhi",
+            output_dir="data",
+            db_name="test.db",
+            max_retries=3,
+            retry_backoff=2,
         )
         assert cfg.cities == ["Delhi", "Mumbai"]
 
     def test_cities_ignores_empty_entries(self, monkeypatch):
         monkeypatch.setenv("CITIES", "Delhi,,Mumbai,")
         cfg = Config(
-            latitude=28.6139, longitude=77.2090, city_name="Delhi",
-            output_dir="data", db_name="test.db", max_retries=3, retry_backoff=2,
+            latitude=28.6139,
+            longitude=77.2090,
+            city_name="Delhi",
+            output_dir="data",
+            db_name="test.db",
+            max_retries=3,
+            retry_backoff=2,
         )
         assert cfg.cities == ["Delhi", "Mumbai"]
