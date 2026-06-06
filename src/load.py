@@ -71,7 +71,7 @@ def save_sqlite(df: pd.DataFrame) -> Path:
                 time, city, temperature_2m, relative_humidity_2m,
                 precipitation_probability, windspeed_10m, weathercode, date, hour
             )
-            SELECT 
+            SELECT
                 time, city, temperature_2m, relative_humidity_2m,
                 precipitation_probability, windspeed_10m, weathercode, date, hour
             FROM weather_temp
